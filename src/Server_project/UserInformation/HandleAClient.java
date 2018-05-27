@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-
 /**
  *
  * @author Butthole
@@ -24,11 +23,17 @@ class HandleAClient extends Thread
     private boolean Authenticated = false;
     BufferedReader isFromClient;
     PrintWriter osToClient;
-    private String RawTextFromCLient;
-    private Socket connectToClient;            // A connected socket    
-    public HandleAClient(Socket socket)        /**Construct a thread*/    
+    private final String ServerPath;
+    private String RawTextFromClient;
+    private Socket connectToClient;            // A connected socket   
+    private String UserName;
+    private String Password;
+    
+    private final UserDataHandler handleUserData = new UserDataHandler();
+    public HandleAClient(Socket socket, String ServerFilePath)        /**Construct a thread*/    
     { 
         connectToClient = socket;
+        ServerPath = ServerFilePath;
     }    
     @Override    
     public void run()    
@@ -40,11 +45,11 @@ class HandleAClient extends Thread
                     new InputStreamReader(connectToClient.getInputStream()));              
             osToClient = new PrintWriter(            
                     connectToClient.getOutputStream(), true);
-            RawTextFromCLient = "";
+            RawTextFromClient = "";
             setUpConnection();  // This is the credentual Check Stage                                     
             while (Authenticated)  // If creds Statisfied, run network Communicaitons          
             {
-                RawTextFromCLient = isFromClient.readLine().replaceAll("//s", "");                 
+                RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");                 
             }            
         } catch(IOException ex)         
         {                    
@@ -56,17 +61,17 @@ class HandleAClient extends Thread
         try{
             while(true)
             {                                                     
-               RawTextFromCLient = isFromClient.readLine().replaceAll("//s", "");                                                        
-               if (RawTextFromCLient.equals("NETWORKSTART"))                                     
+               RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");                                                        
+               if (RawTextFromClient.equals("NETWORKSTART") && !Authenticated)                                     
                {                               
                    sendMessage(ACK);                              
                    getCredentials();                              
-               }  
+               }
                while(Authenticated)
                {                                  
                    System.out.println(":> Listening for client");                       
-                   RawTextFromCLient = isFromClient.readLine().replaceAll("//s", "");  
-                   switch(RawTextFromCLient)
+                   RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");  
+                   switch(RawTextFromClient)
                    {
                    }
                }
@@ -78,24 +83,27 @@ class HandleAClient extends Thread
         String ClientUsername;
         while(!Authenticated){        
             try{              
-                RawTextFromCLient = isFromClient.readLine().replaceAll("//s", "");                 
-                if (onWhiteList(RawTextFromCLient))                 
+                RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");                 
+                if (onWhiteList(RawTextFromClient))                 
                 {                
-                    ClientUsername = RawTextFromCLient;
+                    ClientUsername = RawTextFromClient;
                     sendMessage(ACK);                                                                                                        
-                    RawTextFromCLient = isFromClient.readLine().replaceAll("//s", ""); 
+                    RawTextFromClient = isFromClient.readLine().replaceAll("//s", ""); 
                     if (ClientUsername != null)
                     {                                       
-                        if (PasswordCorrect(ClientUsername, RawTextFromCLient))
+                        if (PasswordCorrect(ClientUsername, RawTextFromClient))
                         {
                             Authenticated = true;
+                            UserName = ClientUsername;
+                            Password = RawTextFromClient;
+                            handleUserData.CheckUserSetup(UserName, ServerPath);
                         }
                         else
                         {                            
                             sendMessage(DENYPASSINVALID); 
                             break;
                         }
-                        System.out.println(RawTextFromCLient);    
+                        System.out.println(RawTextFromClient);    
                     }
                 } else // If not on whiteList
                 {
@@ -131,7 +139,7 @@ class HandleAClient extends Thread
     void sendMessage(String Message)
     {
 //        System.out.println(":> Sending " + Message);    
-        RawTextFromCLient = null;
+        RawTextFromClient = null;
         osToClient.flush();                       
         osToClient.println(Message);        
     }      

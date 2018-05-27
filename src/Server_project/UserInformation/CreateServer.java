@@ -58,13 +58,13 @@ public class CreateServer {
     {
         String ServerName;
         int ServerPort;
-        String ServerString;
+        String ServerFilePath;
         
         public genServer(String port, String Path, String inputServerName)
         {
             ServerName = inputServerName;
             ServerPort = Integer.parseInt(port);
-            ServerString = Path;
+            ServerFilePath = Path;
         }        
         @Override
         public void run() 
@@ -84,7 +84,7 @@ public class CreateServer {
               connectToClient.getInetAddress();            
             System.out.println(":> Host Connected" + clientNo + " FROM IP " + clientInetAddress.getHostName() + " Connected to: " + ServerName);
             // Create a new thread for the connection
-            HandleAClient thread = new HandleAClient(connectToClient);
+            HandleAClient thread = new HandleAClient(connectToClient, ServerFilePath);
             // Start the new thread
             thread.start();
             // Increment clientNo
