@@ -5,6 +5,7 @@
  */
 package Server_project.UserInformation;
 
+import Server_project.UserInformation.FileManager.mySQLAccess;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,11 +28,14 @@ class HandleAClient extends Thread
     private String RawTextFromClient;
     private Socket connectToClient;            // A connected socket   
     private String UserName;
+    private String ServerSQLName;
     private String Password;
+    private mySQLAccess SQL = mySQLAccess.getInstance(); 
     
     private final UserDataHandler handleUserData = new UserDataHandler();
-    public HandleAClient(Socket socket, String ServerFilePath)        /**Construct a thread*/    
+    public HandleAClient(Socket socket, String ServerFilePath, String inputServerName)        /**Construct a thread*/    
     { 
+        ServerSQLName = inputServerName + "Users";
         connectToClient = socket;
         ServerPath = ServerFilePath;
     }    
@@ -59,7 +63,7 @@ class HandleAClient extends Thread
     private void setUpConnection()
     {
         try{
-            while(true)
+            while(!Authenticated)
             {                                                     
                RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");                                                        
                if (RawTextFromClient.equals("NETWORKSTART") && !Authenticated)                                     
@@ -67,78 +71,52 @@ class HandleAClient extends Thread
                    sendMessage(ACK);                              
                    getCredentials();                              
                }
-               while(Authenticated)
-               {                                  
-                   System.out.println(":> Listening for client");                       
-                   RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");  
-                   switch(RawTextFromClient)
-                   {
-                   }
-               }
             }             
         }catch(IOException e){}    
     }
     private void getCredentials()    
     {          
         String ClientUsername;
-        while(!Authenticated){        
-            try{              
-                RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");                 
-                if (onWhiteList(RawTextFromClient))                 
-                {                
-                    ClientUsername = RawTextFromClient;
-                    sendMessage(ACK);                                                                                                        
-                    RawTextFromClient = isFromClient.readLine().replaceAll("//s", ""); 
-                    if (ClientUsername != null)
-                    {                                       
-                        if (PasswordCorrect(ClientUsername, RawTextFromClient))
-                        {
-                            Authenticated = true;
-                            UserName = ClientUsername;
-                            Password = RawTextFromClient;
-                            handleUserData.CheckUserSetup(UserName, ServerPath);
-                        }
-                        else
-                        {                            
-                            sendMessage(DENYPASSINVALID); 
-                            break;
-                        }
-                        System.out.println(RawTextFromClient);    
-                    }
-                } else // If not on whiteList
-                {
-                    sendMessage(DENYUSERINVALID); 
-                    break;
-                }                                        
-            }catch(IOException e){}     
+        while(true){        
+            try{                                            
+
+                RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");   
+                ClientUsername = RawTextFromClient;  
+                sendMessage(ACK);                         
+
+                if (ClientUsername != null)                
+                {                                   
+                    RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");   
+                    if (Authenticate(ClientUsername, RawTextFromClient))                    
+                    {                    
+                        Authenticated = true;                        
+                        UserName = ClientUsername;                        
+                        Password = RawTextFromClient;                        
+                        handleUserData.CheckUserSetup(UserName, ServerPath);    
+                        sendMessage(ACK);                         
+
+                    }                    
+                    else                    
+                    {                                                
+                        sendMessage(DENYPASSINVALID);                                                  
+                        break;                       
+                    }                    
+                    System.out.println(RawTextFromClient);                        
+                }                                       
+            }catch(IOException e){
+                System.out.println("Error!: " + e); 
+                break;                                    }     
         }
-    }
-    private boolean onWhiteList(String InputName) // To do, Make whiteList
-    {
-        String foo = "Jane";
-        if (InputName.equals(foo)) {                        
-            System.out.println(InputName + " is on the whitelist");
-            return true;
-        }
-        return false;
-    }    
-    private boolean PasswordCorrect(String inputName, String inputPassword)
+    } 
+    private boolean Authenticate(String inputName, String inputPassword)
     {            
-        System.out.println("Authentication for " + inputName + " Password " + inputPassword);
-        String foo = "Jane";
-        String fooPass = "Doe";
-        if (inputName.equals(foo) && inputPassword.equals(fooPass))        
-        {              
-            System.out.println("User Authenticated!");
-            osToClient.println(ACK);   
-            return true;
-        }        
-        System.out.println("Authentication: Failed");
-        return false;
+        System.out.println("Authentication for " + inputName + " Password " + inputPassword);              
+        if(SQL.CheckCredentuals(ServerSQLName, inputName, inputPassword)) return true;
+        else return false;
     }    
     void sendMessage(String Message)
     {
-//        System.out.println(":> Sending " + Message);    
+        System.out.println(":> Sending " + Message);    
         RawTextFromClient = null;
         osToClient.flush();                       
         osToClient.println(Message);        
