@@ -39,7 +39,7 @@ public class CreateServer {
                 System.out.println("*** Generated with Server Name " + InputData[i][2] + ":" +
                         " Path: "+ InputData[i][1] + " With port: "+ InputData[i][0]);
 
-                if(SQL.CheckTable(InputData[i][2] + "users"))System.out.println("SQL Success:> Table for server "+ InputData[i][2]+ " Verified");                               
+                if(SQL.CheckTable(InputData[i][2] + "users", InputData[i][1]))System.out.println("SQL Success:> Table for server "+ InputData[i][2]+ " Verified");                               
                 else System.out.println("SQL Failure:> Table for server "+ InputData[i][2]+ " not verified");
                 CurrentServerSlot = i;
             }

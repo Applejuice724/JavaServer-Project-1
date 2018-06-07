@@ -6,6 +6,7 @@
 package Server_project.UserInformation;
 
 import Server_project.UserInformation.FileManager.mySQLAccess;
+import Server_project.UserInformation.FileManager.projectSystem.Security.fileEncrypt;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,6 +22,7 @@ class HandleAClient extends Thread
     private final String ACK = "ACK";
     private final String DENYUSERINVALID = "DENY1";
     private final String DENYPASSINVALID = "DENY2";
+    private fileEncrypt encryptFile;
     private boolean Authenticated = false;
     BufferedReader isFromClient;
     PrintWriter osToClient;
@@ -38,6 +40,7 @@ class HandleAClient extends Thread
         ServerSQLName = inputServerName + "Users";
         connectToClient = socket;
         ServerPath = ServerFilePath;
+        encryptFile = new fileEncrypt();
     }    
     @Override    
     public void run()    
@@ -50,15 +53,17 @@ class HandleAClient extends Thread
             osToClient = new PrintWriter(            
                     connectToClient.getOutputStream(), true);
             RawTextFromClient = "";
-            setUpConnection();  // This is the credentual Check Stage                                     
+            setUpConnection();  // This is the credentual Check Stage               
             while (Authenticated)  // If creds Statisfied, run network Communicaitons          
             {
                 RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");                 
+                
             }            
         } catch(IOException ex)         
         {                    
             System.err.println(ex);            
         }        
+        System.out.print("User has logged off");
     }    
     private void setUpConnection()
     {
@@ -92,33 +97,44 @@ class HandleAClient extends Thread
                         Authenticated = true;                        
                         UserName = ClientUsername;                        
                         Password = RawTextFromClient;                        
-                        handleUserData.CheckUserSetup(UserName, ServerPath);    
-                        sendMessage(ACK);                         
-
+                        handleUserData.CheckUserSetup(UserName, ServerPath);                
+                        fileEncrypt saveClientData = new fileEncrypt();
+                        saveClientData.createClientDataWithEncyrp(ServerPath, getUserdata());                                                
+                        sendMessage(ACK); 
                     }                    
                     else                    
                     {                                                
                         sendMessage(DENYPASSINVALID);                                                  
                         break;                       
                     }                    
-                    System.out.println(RawTextFromClient);                        
+//                    System.out.println(RawTextFromClient);                        
                 }                                       
             }catch(IOException e){
-                System.out.println("Error!: " + e); 
-                break;                                    }     
+//                System.out.println("Error!: " + e); 
+                break;                                    
+            }     
         }
     } 
     private boolean Authenticate(String inputName, String inputPassword)
     {            
-        System.out.println("Authentication for " + inputName + " Password " + inputPassword);              
+//        System.out.println("Authentication for " + inputName + " Password " + inputPassword);              
         if(SQL.CheckCredentuals(ServerSQLName, inputName, inputPassword)) return true;
         else return false;
     }    
     void sendMessage(String Message)
     {
-        System.out.println(":> Sending " + Message);    
+//        System.out.println(":> Sending " + Message);    
         RawTextFromClient = null;
         osToClient.flush();                       
         osToClient.println(Message);        
     }      
+    String[] getUserdata()
+    {
+        String data[] = new String[4];
+        data[0]= ("First Name").replaceAll("\\s", ""); // Gets the name of the User
+        data[1]= ("Last Name").replaceAll("\\s", "");  // Gets the Last Name of User
+        data[2]= ("Id Number").replaceAll("\\s", "");  // Gets ID of User
+        data[3]= UserName;
+        return data;
+    }
 }

@@ -1,5 +1,7 @@
 
 package Server_project.UserInformation.FileManager;
+import Server_project.UserInformation.ErrorLogger;
+import static Server_project.UserInformation.ErrorLogger.ERRORLIST.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,6 +10,7 @@ import java.sql.Statement;
 
 public class mySQLAccess {
     private static mySQLAccess instance = null;
+    private static ErrorLogger ErrorLog = new ErrorLogger();     
     private String DataBase = "projectjavaserver";    
     private String SQLUsername = "Admin";
     private String SQLPassword = "Jeremy56789!";    
@@ -42,10 +45,10 @@ public class mySQLAccess {
         }catch(Exception e){} finally {closeSQL();}                
     }
     
-    public boolean CheckTable(String table) // Checks if the table exists
+    public boolean CheckTable(String table, String serverName) // Checks if the table exists
     {
         try { 
-            System.out.println("SQL Checking table:> " + RemoveIllegalCharecters(table));
+//            System.out.println("SQL Checking table:> " + RemoveIllegalCharecters(table));
             if (connect == null)connect = DriverManager.getConnection(DefaultDatabase +
                                    "user="+SQLUsername+"&password=" + SQLPassword);   
             stmt = connect.createStatement();   
@@ -54,9 +57,9 @@ public class mySQLAccess {
                 rs = stmt.getResultSet();
             }                            
             return true;
-        }catch(Exception e){
-            System.out.println("SQL:> " + e);
-            if(createServerTable(RemoveIllegalCharecters(table))) return true;
+        }catch(Exception e){                        
+            ErrorLog.LogKnownError(serverName, ERR1, ":"+DataBase);
+            if(createServerTable(RemoveIllegalCharecters(table), serverName)) return true;
             else return false;            
         } finally
         {     
@@ -65,7 +68,7 @@ public class mySQLAccess {
     }
     
             
-    public boolean createServerTable(String inputTable) //returns false if fail
+    private boolean createServerTable(String inputTable, String serverName) //returns false if fail
     {
         try{        
             if (connect == null) connect = DriverManager.getConnection
@@ -82,17 +85,19 @@ public class mySQLAccess {
 
             System.out.println("SQL Table Created:> " + inputTable);
             return true;
-        }catch(Exception e){System.out.println(e);return false;} 
+        }catch(Exception e){
+//            System.out.println("SQL: Table Creation Error:> "+e);
+            ErrorLog.LogKnownError(serverName, ERR2);
+            return false;
+        } 
         finally {closeSQL();}   
     }
     
     
     public boolean CheckCredentuals(String InputServerName, String Username, String Password)
     {
-        try { 
-                   
-                        
-            System.out.println("SQL Checking:> " + Username + " PAssword " + Password);
+        try {                                            
+//            System.out.println("SQL Checking:> " + Username + " PAssword " + Password);
             if (connect == null)connect = DriverManager.getConnection(DefaultDatabase +
                                    "user="+SQLUsername+"&password=" + SQLPassword);
             stmt = connect.createStatement();    
@@ -102,16 +107,14 @@ public class mySQLAccess {
             }          
             while (rs.next())
             {                                          
-                System.out.println(rs.getString(5));
-
-                if (Username.equals(rs.getString(5))) 
+//                System.out.println(rs.getString(5));
+//
+//                if (Username.equals(rs.getString(5))) 
                 {
-                    System.out.println("SQL:> Username Found" );
-                    System.out.println("SQL:> Comparing Password " + rs.getString(6) + " to " + Password);                    
+//                    System.out.println("SQL:> Username Found" );
+//                    System.out.println("SQL:> Comparing Password " + rs.getString(6) + " to " + Password);                    
                     if (Password.equals( rs.getString(6))) {
-                        System.out.println("SQL:> PAssword Authenticated");
-                        
-                        
+//                        System.out.println("SQL:> PAssword Authenticated");                                                
                         return true;                        
                     }                                
                     else return false;
@@ -174,10 +177,5 @@ public class mySQLAccess {
     private String RemoveIllegalCharecters(String inputVariable)
     {
         return inputVariable.replaceAll("\"", "").replaceAll("!", "").replaceAll(" ", "").toLowerCase();
-    }
-    
-
-    
-    
-    
+    }                
 }

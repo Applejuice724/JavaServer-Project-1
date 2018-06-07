@@ -3,8 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Server_project.UserInformation.FileManager;
+package Server_project.UserInformation.FileManager.projectSystem.FileManager;
 
+import Server_project.UserInformation.FileManager.projectSystem.File_Manager;
+import Server_project.UserInformation.FileManager.projectSystem.File_Manager;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;

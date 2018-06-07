@@ -11,7 +11,8 @@ import Server_project.GUI.SERVERCREATE.ServerCreationGuI;
 import Server_project.GUI.SERVERMENU.ListServers;
 import Server_project.GUI.TopBar;
 import Server_project.UserInformation.CreateServer;
-import Server_project.UserInformation.FileManager.File_Manager;
+import Server_project.UserInformation.FileManager.projectSystem.File_Manager;
+import Server_project.UserInformation.FileManager.mySQLAccess;
 import java.awt.event.ActionListener;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -50,10 +51,9 @@ public class ApplicationStateManager extends javax.swing.JPanel{
     private int AppHeight;
     private int AppWidth;
     private double Version;
-    private int ServerCount = 0;
-    
-
-    
+    private int ServerCount = 0;   
+    private static ApplicationStateManager instance = null;
+        
     public void Init(String title, int width, int height, LayerSet Layout)       
     { 
         Panel_w  = new JFrame(title);          // Sets the title 
@@ -72,12 +72,18 @@ public class ApplicationStateManager extends javax.swing.JPanel{
         AppHeight = size;
         AppWidth = width;        
         PanelInfo();   
+    }         
+    public static ApplicationStateManager getInstance() 
+    {
+        if(instance == null)
+            instance = new ApplicationStateManager();        
+        return instance;
+    } 
+    //          _____________PUBLIC FUNCTIONS_________________   
+    public void sendErrorToScreen(String inputError)
+    {
+        topBar.sendError(inputError);       
     }
-    //          _____________PUBLIC FUNCTIONS_________________
-     protected void ProgramRunning(boolean Isrunning)
-     {
-         running = Isrunning;
-     }     
      // This is used to set the layout
      public void setLayerSelect(LayerSet LayerSelected) 
      {
@@ -100,7 +106,11 @@ public class ApplicationStateManager extends javax.swing.JPanel{
      {                         
          if (ServerManager  == null) ServerManager = new CreateServer();  
          ServerManager.ServerGenerationMass(InputServerdata, ServerCount);    
-     }
+     }        
+     protected void ProgramRunning(boolean Isrunning)
+     {
+         running = Isrunning;
+     }  
      protected void RestartApplication()
      {       
          try         
@@ -167,57 +177,44 @@ public class ApplicationStateManager extends javax.swing.JPanel{
                break;
            
            default:      
-               break;
-       
-       }
-        
+               break;       
+       }        
     }
     void SetConstraints(LayerSet ConstraintSelect)
     {
         switch(ConstraintSelect)
        {
             case SERVERMENU:                                                             
-                // ################# SYSTEM FUNCTIONS ################                                                                 
-                
+                // ################# SYSTEM FUNCTIONS ################                                                                                 
                 MainWinlayout.putConstraint                
                     (SpringLayout.EAST, ServerList, -350
                             , SpringLayout.EAST, con);
                 MainWinlayout.putConstraint
                             (SpringLayout.NORTH, ServerList, 200
-                                    , SpringLayout.NORTH, con);  
-                
-                
+                                    , SpringLayout.NORTH, con);                                  
                 MainWinlayout.putConstraint                
                     (SpringLayout.EAST, topBar, 0
                             , SpringLayout.EAST, con);
                 MainWinlayout.putConstraint
                             (SpringLayout.NORTH, topBar, 0 
-                                    , SpringLayout.NORTH, con);                                             
-                
-
-                
-                break;
-                
-            case SERVERCREATE:                                                                                                    
-                
+                                    , SpringLayout.NORTH, con);                                                                             
+                break;                
+            case SERVERCREATE:                                                                                                                    
                 MainWinlayout.putConstraint                
                     (SpringLayout.EAST, topBar, 0
                             , SpringLayout.EAST, con);
                 MainWinlayout.putConstraint
                             (SpringLayout.NORTH, topBar, 0 
-                                    , SpringLayout.NORTH, con);  
-                                                
+                                    , SpringLayout.NORTH, con);                                                  
                 MainWinlayout.putConstraint                
                     (SpringLayout.EAST, ServerCreateScreen, -0
                             , SpringLayout.EAST, con);
                 MainWinlayout.putConstraint
                             (SpringLayout.NORTH, ServerCreateScreen, 200
-                                    , SpringLayout.NORTH, con);  
-                                                    
+                                    , SpringLayout.NORTH, con);                                                      
                 break;        
         }
-    }
-    
+    }    
     void PanelInfo()
     {                         
         Border border = BorderFactory.createLineBorder(Color.WHITE, 25);

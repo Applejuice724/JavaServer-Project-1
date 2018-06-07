@@ -1,7 +1,7 @@
 
 package Server_project;
 
-import Server_project.UserInformation.FileManager.File_Manager;
+import Server_project.UserInformation.FileManager.projectSystem.File_Manager;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -12,7 +12,7 @@ public class Application
 {
     private static String IndexConfig;                   
     String RawContentVariables[];
-    ApplicationStateManager event;   
+    ApplicationStateManager event = ApplicationStateManager.getInstance();   
     private double Version;
     private int ServerCount;
     private String ServerPaths[];
@@ -24,20 +24,17 @@ public class Application
     // No size specified
     public Application(String title, ApplicationStateManager.LayerSet InitLayout)          
     {
-        event = new ApplicationStateManager();        
         int size = 800;                       // Set size
         event.Init(title, size, InitLayout);  // Sets Initial Values
     }    
     // FULLSCREEN application
     public Application(String title, int width , int height, ApplicationStateManager.LayerSet InitLayout ) 
     {
-        event = new ApplicationStateManager();         
         event.Init(title,  width, height, InitLayout);  
     }     
     // Non-Fullscreen
     public Application(String title, int size, ApplicationStateManager.LayerSet InitLayout)// Basic details and Generation here
     {
-        event = new ApplicationStateManager();        
         event.Init(title, size, InitLayout); 
     }
         
