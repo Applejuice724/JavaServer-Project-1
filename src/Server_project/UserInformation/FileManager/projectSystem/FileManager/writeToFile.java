@@ -54,4 +54,13 @@ public class writeToFile extends ReadFile implements Serializable {
         serializeClientData client = new serializeClientData();
         client.setClientData(filePath, data);                           
     }
+    public void overWriteFile(String inputPath, String content)
+    {                
+        try {
+            PrintWriter writer = new PrintWriter(inputPath, "UTF-8");
+            writer.println(content);
+            writer.close();                        
+        }catch(IOException ex){}
+        
+    }
 }

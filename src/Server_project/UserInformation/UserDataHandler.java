@@ -6,7 +6,6 @@
 package Server_project.UserInformation;
 
 import Server_project.UserInformation.FileManager.projectSystem.File_Manager;
-import Server_project.UserInformation.FileManager.mySQLAccess;
 
 /**
  *
@@ -18,15 +17,22 @@ public class UserDataHandler {
     public boolean CheckUserSetup(String Username, String filePath)
     {
         String path_w = filePath.substring(0, filePath.length() - 5);
-        System.out.println("Results:> " + path_w);        
         if (ManageUserData.DoesExist(path_w + "Index"))
         {
-            System.out.println("Results:> Userpath, valid");
+//            System.out.println("Results:> Userpath:"+path_w+" valid");
         }
         else
         {
             System.out.println("Error: User File Path cannot be determined");
         }        
+        return false;
+    }
+    public boolean IfClientFileExists(String inputClientHome)
+    {
+        try{        
+            if (!ManageUserData.DoesExist(inputClientHome)) ManageUserData.createFolder(inputClientHome);
+            return true;
+        }catch(Exception eppi){}                
         return false;
     }
     

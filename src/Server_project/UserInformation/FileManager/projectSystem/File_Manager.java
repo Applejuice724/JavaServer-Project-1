@@ -37,7 +37,11 @@ public class File_Manager {
     public File_Manager()
     {
     }
-    
+    public void OverwriteFile(String filePath, String content)
+    {
+        Write.overWriteFile(filePath, content);
+    }
+        
     public void createnewServer(String ServerData[], String ServerPath)
     {
         setFunctions();        

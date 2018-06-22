@@ -12,7 +12,7 @@ import Server_project.GUI.SERVERMENU.ListServers;
 import Server_project.GUI.TopBar;
 import Server_project.UserInformation.CreateServer;
 import Server_project.UserInformation.FileManager.projectSystem.File_Manager;
-import Server_project.UserInformation.FileManager.mySQLAccess;
+import Server_project.UserInformation.mySQLAccess;
 import java.awt.event.ActionListener;
 import java.awt.Container;
 import java.awt.Dimension;
