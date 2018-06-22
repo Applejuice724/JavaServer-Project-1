@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 
 /**
@@ -51,7 +52,6 @@ public class File_Manager {
     {
         File  f = new File(path);
         f.mkdir();        
-        System.out.println("Server Folder created in: " + path);              
     }         
     public void createErrorFile(String filePath, String inputData )
     {
@@ -136,7 +136,12 @@ public class File_Manager {
             System.err.println(x);                        
             return false;
         }                                
-    }      
+    }   
+    public Boolean FileExist(String pathInput)
+    {
+        Path path_w = FileSystems.getDefault().getPath(pathInput);
+        return Files.exists(path_w, LinkOption.NOFOLLOW_LINKS);
+    }
     public Boolean DoesExist(Path Filename)
     {                
         try (InputStream in = Files.newInputStream(Filename);    

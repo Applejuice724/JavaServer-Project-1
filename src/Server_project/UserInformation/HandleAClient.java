@@ -84,7 +84,7 @@ class HandleAClient extends Thread
             catch(IOException ex){                    
                 System.err.println(ex);            
             } 
-            while(!connectToClient.equals(connectToClient.isClosed()) && running)
+            while(running)
             {
                 while (Authenticated && running)   // If creds Statisfied, run network Communicaitons          
                 {
@@ -102,28 +102,22 @@ class HandleAClient extends Thread
                              sendMessage(LastLoginData);
                             break;                        
                         case FILETRANREQ:                              
-    //                        System.out.println("Receiving File");
-                            File SavedFile;
+                            System.out.println("Placing Uploaded file in: " + clientFilePath);
+                            File SavedFile = null;
                             try { 
                                 if (handleUserData.IfClientFileExists(clientFilePath)){                                                                  
                                     sendMessage(ACK);                                                                                    
                                     RawTextFromClient = isFromClient.readLine().replaceAll("//s", "");                            
-                                    String FileName = RawTextFromClient;                            
-                                    sendMessage(ACK);                                                    
+                                    String FileName = RawTextFromClient;   
+                                    System.out.println("Filename:> "+ FileName);
+                                    sendMessage(ACK); 
                                     SavedFile = new File(clientFilePath+"\\"+FileName);                                                            
                                     // *****************                                                                                 
                                     InputStream inp = connectToClient.getInputStream();                            
                                     ObjectInputStream ois = new ObjectInputStream(inp);                            
                                     byte[] content = null;                            
                                     content = (byte[]) ois.readObject();                                                            
-                                    Files.write(SavedFile.toPath(), content);                            
-                                    isFromClient = new BufferedReader(                                                                                                          
-                                            new InputStreamReader(connectToClient.getInputStream()));                                          
-                                    osToClient = new PrintWriter(   
-                                                connectToClient.getOutputStream(), true);              
-                                    if (handleUserData.IfClientFileExists(SavedFile.toString()))sendMessage(ACK);                              
-                                    else {sendMessage(FILECOULDNOTBECREATED); 
-                                    break;}
+                                    Files.write(SavedFile.toPath(), content);                                                                           
                                     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");	
                                     Date date = new Date();
                                     System.out.println("*** File from network saved!");
@@ -131,8 +125,25 @@ class HandleAClient extends Thread
                                     break;                        
                                 }
                             }
-                            catch (IOException ex) {sendMessage(FILECOULDNOTBECREATED);} 
-                            catch (ClassNotFoundException ex) {sendMessage(FILECOULDNOTBECREATED);}  
+                            catch (IOException ex) 
+                            {
+                                sendMessage(FILECOULDNOTBECREATED);
+                                System.out.println("FILE ERROR! "+ex);
+                            } 
+                            catch (ClassNotFoundException ex) 
+                            {
+                                sendMessage(FILECOULDNOTBECREATED);
+                                System.out.println("FILE ERROR Class not found! "+ex);
+                            } finally
+                            {                                           
+                                isFromClient = new BufferedReader(                                                                                                                                                      
+                                        new InputStreamReader(connectToClient.getInputStream()));                                                                          
+                                osToClient = new PrintWriter(                                                   
+                                        connectToClient.getOutputStream(), true); 
+                                if (handleUserData.IfClientFileExists(SavedFile.toString()))sendMessage(ACK);                                                              
+                                else {sendMessage(FILECOULDNOTBECREATED); break;}                                
+                            } 
+                            System.out.println("Could not write file");
                             break;
 
                         case ADDUSRREQ:
@@ -154,13 +165,13 @@ class HandleAClient extends Thread
 
                             break;
                     } } catch (IOException ex) {
-                        System.out.print("User has logged off");                   
-                        ClientActivityLog.setLastLogout();
+                        running = false;
                         break;
                     }                  
                 }
             }
         }
+        ClientActivityLog.setLastLogout();
         System.out.println("User has logged off");  
         return;
     }    

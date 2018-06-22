@@ -120,8 +120,8 @@ public class clientLogger {
                         break;                        
                 }
             }            
-        }catch(Exception e){}             
-        File_Manager man = new File_Manager();
+        }catch(ClassNotFoundException e){}             
+        man = new File_Manager();
         man.OverwriteFile(LogTextPath, contentPrint);
         serializeClientData();
     }    
@@ -143,7 +143,7 @@ public class clientLogger {
         content=clientDataLog.getlog();        
     }
     private void DeserializeClientData() throws ClassNotFoundException{
-        ClientData clientDataLog = null;    
+        clientDataLog = null;    
         FileInputStream fis = null; 
         ObjectInputStream in = null; 
         try { 

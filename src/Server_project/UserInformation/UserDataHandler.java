@@ -30,9 +30,16 @@ public class UserDataHandler {
     public boolean IfClientFileExists(String inputClientHome)
     {
         try{        
-            if (!ManageUserData.DoesExist(inputClientHome)) ManageUserData.createFolder(inputClientHome);
+            if (!ManageUserData.FileExist(inputClientHome)) 
+            {
+                ManageUserData.createFolder(inputClientHome);
+                System.out.println("Directory " + inputClientHome + " Created!");
+            }
+            else{System.out.print("Directory Exists!");}
             return true;
-        }catch(Exception eppi){}                
+        }catch(Exception eppi){                
+            System.out.println("File Creaiton Error " + eppi );
+        }                
         return false;
     }
     
